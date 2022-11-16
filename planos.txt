@@ -1,0 +1,17 @@
+PLANO DE IMPLEMENTAÇÕES
+
+- Adcionar o monstro cogumelo *FEITO*
+
+- Adcionar a movimentação de entrada do monstro *FEITO*
+
+- Adcionar vida do monstro *FEITO*
+	
+- Adcionar o poder do flappy *FEITO*
+
+- Adcionar colisão entre poder e monstro *FEITO*
+
+- Adcionar efeito sonoro do poder
+
+- Adcionar efeito sonoro da colisão do poder
+
+- Adcionar animação de hurt ao sofrer colisão
