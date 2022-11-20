@@ -1,7 +1,13 @@
 console.log('Flappy Bird Game');
 
 const somDeQueda = new Audio();
-somDeQueda.src ='./assets/sound/fart.mp3';
+somDeQueda.src ='./assets/sound/hit.mp3';
+
+const somDeMetal = new Audio();
+somDeMetal.src ='./assets/sound/metal-sound.mp3';
+
+const somDoPoder= new Audio();
+somDoPoder.src ='./assets/sound/poder.mp3';
 
 const sprites = new Image();
 sprites.src = './assets/sprites/sprites.png';
@@ -18,19 +24,8 @@ const contexto = canvas.getContext('2d');
 const globais = {};
 let telaAtiva = {};
 let frames = 0;
-let frameContador = 0;
-
-//variavel que ajuda na lógica de movimento do poder
-let poderDisponivel = true;
-
-//função que define de quantos em quantos frames o pássaro pode usar o poder
-function passouFrames(){
-    const passou300Frames = frames % 300 === 0;
-    if(passou300Frames) {
-        poderDisponivel = true;
-    }
-}
-  
+let animacao = false;
+ 
 //Objeto referente aos pontos finais na tela de game over
  const placarFinal= {
     desenha(){
@@ -88,7 +83,6 @@ const gameOver= {
     }
 }
 //Objeto referente as medalhas na tela de Game Over
-//OBS: ainda não foi implementado
 const medalhas = 
 {
     sX: 0,
@@ -126,26 +120,28 @@ const mensagemGetReady = {
        );
     }
 }
-//função que avalia se houve colisão entre o poder do flappy e o monstro 
-function hitMonstro(){
-    if(globais.poder.x === globais.enemy.x){
-        console.log(globais.enemy.vida)
-        globais.enemy.vida = globais.enemy.vida - 25
-        console.log('houve colisão')
-        console.log(globais.enemy.vida)      
-    }
-    return true;
-}
 
 //função que seta o x e y do poder pros mesmos do flappy
 //fazendo a lógica do poder sair do flappy
 function liberaPoder(){
     if(poderDisponivel == true){
+        somDoPoder.play();
         globais.poder.x = globais.flappyBird.x
         globais.poder.y = globais.flappyBird.y
         poderDisponivel = false
     }
 }
+
+//função que define de quantos em quantos frames o pássaro pode usar o poder
+function passouFrames(){
+    const passou300Frames = frames % 300 === 0;
+    if(passou300Frames && poderDisponivel == false){
+        poderDisponivel = true;
+    }
+}
+ 
+//variavel que ajuda na lógica de movimento do poder
+let poderDisponivel = true;
 
 //função responsável por criar o poder
 function criaPoder(){
@@ -188,7 +184,7 @@ function criaPoder(){
                     );
                     if(poderDisponivel == false){
                         poder.x +=3
-                    }                        
+                    }     
             },
             espacePush(){
                 liberaPoder();
@@ -206,10 +202,17 @@ function criaMonstro(){
         spriteX: 0,
         spriteY: 0,
         largura: 130,
-        altura: 114,
-        x: 320,
-        y: canvas.height- 200,
+        altura: 145,
+        x: 350,
+        y: canvas.height - 200,
         vida : 100,
+
+        atualiza(){
+            this.monstroAparece();    
+            this.poderColide();
+            this.vidaAcaba();       
+        },
+         
         movimentos:[
             {spriteX: 0, spriteY:0, }, // Parado 1
             {spriteX: 130, spriteY:148, }, // Parado 2
@@ -219,55 +222,114 @@ function criaMonstro(){
                  
         ],
         hurt:[
-            {spriteX: 0, spriteY :403, largura: 130, altura: 100, },
+            {spriteX: 0, spriteY :403, largura: 130, altura: 130, },
+            {spriteX: 0, spriteY :403, largura: 130, altura: 130, },
+            {spriteX: 0, spriteY :403, largura: 130, altura: 130, },
+            {spriteX: 0, spriteY :403, largura: 130, altura: 130, },   
+            {spriteX: 0, spriteY :403, largura: 130, altura: 130, },  
         ],
+
+        bad:[
+            {spriteX: 0, spriteY :556, largura: 131, altura: 150, },
+            {spriteX: 437, spriteY :556, largura: 131, altura: 150, },
+            {spriteX: 296, spriteY :556, largura: 131, altura: 150, },  
+            {spriteX: 146, spriteY :556, largura: 131, altura: 150, },   
+            {spriteX: 146, spriteY :556, largura: 131, altura: 150, },   
+        ],
+
         frameAtual: 0,
-            atualizaOFrameAtual(){
-                const intervaloDeFrames = 10;
-                const passouOIntervalo = frames % intervaloDeFrames
-                
-                if(passouOIntervalo === 0){
-                    const baseDoIncremento = 1;
-                    const incremento = baseDoIncremento + enemy.frameAtual;
-                    const baseRepeticao = enemy.movimentos.length;
-                    enemy.frameAtual = incremento % baseRepeticao
-                    //console.log(frames)
-                  } 
-            }, 
-            atualiza(){
-                this.primeiraAparição();
-                this.segundaAparição();
-            },
-            //função que cria a lógica da primeira vez que o cogumelo-monstro aparece 
-            primeiraAparição(){
-                frameMonstro = frames;
-             if(frameMonstro > 500  && frameMonstro < 560){
-                enemy.x = enemy.x -2
-             }
-             else if( frameMonstro > 900 && frameMonstro < 960){
-                enemy.x = enemy.x +2
+
+        atualizaOFrameAtual(){
+            const intervaloDeFrames = 10;
+            const passouOIntervalo = frames % intervaloDeFrames
+            
+            if(passouOIntervalo === 0){
+                const baseDoIncremento = 1;
+                const incremento = baseDoIncremento + enemy.frameAtual;
+                const baseRepeticao = enemy.movimentos.length;
+                enemy.frameAtual = incremento % baseRepeticao 
+            }           
+        },
+
+        desenha(){
+            if(globais.enemy.vida > 1){
+                if(animacao == true){
+                    enemy.atualizaOFrameAtual()
+                    const{ spriteX, spriteY } = enemy.hurt[enemy.frameAtual];
+                    contexto.drawImage( 
+                        enemySprite,
+                        spriteX, spriteY, 
+                        enemy.largura, enemy.altura,
+                        enemy.x, enemy.y -15,
+                        enemy.largura, enemy.altura,
+                   );
+                }
+                else{  
+                    enemy.atualizaOFrameAtual()
+                    const{ spriteX, spriteY } = enemy.movimentos[enemy.frameAtual];
+                    contexto.drawImage( 
+                        enemySprite,
+                        spriteX, spriteY, 
+                        enemy.largura, enemy.altura,
+                        enemy.x, enemy.y -15,
+                        enemy.largura, enemy.altura,
+                   );        
+                } 
             }
-         },
-            segundaAparição(){
-                frameMonstro = frames;
-             if(frameMonstro > 1200 && frameMonstro < 1260){
-                enemy.x = enemy.x -2
-             }
-            //  else if( frameMonstro > 900 && frameMonstro < 960){
-            //     enemy.x = enemy.x +2
-            // }
-         },
-            desenha(){
-                enemy.atualizaOFrameAtual()
-                const{spriteX, spriteY} = enemy.movimentos[enemy.frameAtual];
-                contexto.drawImage( 
-                    enemySprite,
-                    spriteX, spriteY,
-                    enemy.largura +10, enemy.altura +23, 
-                    enemy.x, enemy.y,
-                    enemy.largura, enemy.altura,
-               );
-            },
+            else if(globais.enemy.vida <= 0){
+                if(animacao == true){
+                    enemy.atualizaOFrameAtual()
+                    const{ spriteX, spriteY } = enemy.hurt[enemy.frameAtual];
+                    contexto.drawImage( 
+                        enemySprite,
+                        spriteX, spriteY, 
+                        enemy.largura, enemy.altura,
+                        enemy.x, enemy.y -15,
+                        enemy.largura, enemy.altura,
+                   );
+                }
+                else{
+                    enemy.atualizaOFrameAtual()
+                    const{ spriteX, spriteY } = enemy.bad[enemy.frameAtual];
+                    contexto.drawImage( 
+                        enemySprite,
+                        spriteX, spriteY, 
+                        enemy.largura, enemy.altura,
+                        enemy.x, enemy.y -15,
+                        enemy.largura, enemy.altura,
+                   );        
+                }
+                //aqui ainda será adcionado a condicional que fará a animação de morte do cogumelo
+            }
+        },
+
+        monstroAparece(){
+            xAtual = enemy.x
+            if(frames > 500 && frames < 660){
+                enemy.x --
+            }            
+        },
+
+        poderColide(){
+            if(globais.poder.x > 200 && globais.poder.y > 280){
+                animacao = true;
+                globais.poder.x = -50
+                globais.poder.y = -50
+                poderDisponivel = true;
+                enemy.vida = enemy.vida - 25
+                console.log(this.vida)
+                setInterval(() => {
+                    animacao = false;
+                }, 2000);          
+            }
+        },
+
+        vidaAcaba(){
+            if(this.vida <= 0){
+                console.log('você destruiu o monstro')
+            }
+        }
+
     }
     return enemy;
 }
@@ -404,7 +466,7 @@ function criaCanos(){
 
                 if (canos.temColisaoComOFlappyBird(par)){
                     poderDisponivel = true;
-                    somDeQueda.play();
+                    somDeMetal.play();
                     mudaParaTela(telas.FIM)   
                 }
                 if(par.x + canos.largura <=0){
@@ -511,6 +573,7 @@ function criaFlappyBird(){
     }
     return flappyBird;
 }
+
 //FUNÇÃO QUE CRIA O PLACAR
 function  criaPlacar(){
     const placar = {
@@ -551,7 +614,7 @@ const telas = {
         inicializa(){
             globais.flappyBird = criaFlappyBird();
             globais.chao = criaChao();
-            globais.canos = criaCanos(); 
+            globais.canos = criaCanos();
         },
         desenha(){  
             planoDeFundo.desenha();
@@ -593,8 +656,8 @@ telas.JOGO = {
         globais.chao.atualiza();
         globais.canos.atualiza();
         globais.placar.atualiza();
+        globais.poder.atualiza();  
         globais.enemy.atualiza();
-        globais.poder.atualiza();   
     },
     espacePush(){
         globais.poder.espacePush();
@@ -628,9 +691,7 @@ function loop(){
     telaAtiva.desenha();
     telaAtiva.atualiza();
     frames += 1;
-    frameContador +=1;
-    hitMonstro();
-    requestAnimationFrame(loop); 
+    requestAnimationFrame(loop);
 }
 
 //função responsavel por ativar o evento de click caso a tela atual tenha um evento do tipo

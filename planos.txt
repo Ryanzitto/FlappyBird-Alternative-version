@@ -10,8 +10,12 @@ PLANO DE IMPLEMENTAÇÕES
 
 - Adcionar colisão entre poder e monstro *FEITO*
 
-- Adcionar efeito sonoro do poder
+- Adcionar efeito sonoro do poder *FEITO*
 
-- Adcionar efeito sonoro da colisão do poder
+- Adcionar animação de hurt ao sofrer colisão *FEITO*
 
-- Adcionar animação de hurt ao sofrer colisão
+- Adcionar efeito sonoro da colisão do poder 
+
+- Adcionar animação de morte do cogumelo
+
+- Adcionar algum prêmio ou reconhecimento ao jogador ao vencer o BOSS
