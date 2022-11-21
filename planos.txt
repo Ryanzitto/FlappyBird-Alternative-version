@@ -19,3 +19,5 @@ PLANO DE IMPLEMENTAÇÕES
 - Adcionar animação de morte do cogumelo
 
 - Adcionar algum prêmio ou reconhecimento ao jogador ao vencer o BOSS
+
+BUG ENCONTRADO: a colisão do poder com o boss existe mesmo antes do BOSS spawnar

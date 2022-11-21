@@ -26,6 +26,10 @@ let telaAtiva = {};
 let frames = 0;
 let animacao = false;
  
+//variavel que ajuda na lógica de movimento do poder
+let poderDisponivel;
+
+
 //Objeto referente aos pontos finais na tela de game over
  const placarFinal= {
     desenha(){
@@ -65,7 +69,7 @@ const planoDeFundo = {
     }
 }
 //Objeto referente a tela de Game Over
-const gameOver= {
+const gameOver = {
     sX: 134,
     sY: 153,
     w: 226,
@@ -83,8 +87,7 @@ const gameOver= {
     }
 }
 //Objeto referente as medalhas na tela de Game Over
-const medalhas = 
-{
+const medalhas = {
     sX: 0,
     sY: 79,
     w: 44,
@@ -134,16 +137,58 @@ function liberaPoder(){
 
 //função que define de quantos em quantos frames o pássaro pode usar o poder
 function passouFrames(){
-    const passou300Frames = frames % 300 === 0;
-    if(passou300Frames && poderDisponivel == false){
+    const passou600Frames = frames % 600 === 0;
+    if(passou600Frames){
         poderDisponivel = true;
     }
-}
- 
-//variavel que ajuda na lógica de movimento do poder
-let poderDisponivel = true;
+} 
 
-//função responsável por criar o poder
+function criaIcons(){
+    const iconPower = {
+        spriteX: 22,
+        spriteY: 160,
+        largura: 180,
+        altura: 150,
+        x: 10,
+        y: 10,
+
+        movimentos:[
+            {spriteX: 22, spriteY:160, }, // sprite 1
+            {spriteX: 224, spriteY:160, }, // sprite 2
+            {spriteX: 456, spriteY:160, }, // sprite 3 
+        ],
+    
+        frameAtual: 0,
+            atualizaOFrameAtual(){
+                const intervaloDeFrames = 10;
+                const passouOIntervalo = frames % intervaloDeFrames
+                
+                if(passouOIntervalo === 0){
+                    const baseDoIncremento = 1;
+                    const incremento = baseDoIncremento + iconPower.frameAtual;
+                    const baseRepeticao = iconPower.movimentos.length;
+                    iconPower.frameAtual = incremento % baseRepeticao
+                  }
+            },
+            desenha(){ 
+                if(poderDisponivel){
+                    iconPower.atualizaOFrameAtual()                  
+                    const{spriteX, spriteY} = iconPower.movimentos[iconPower.frameAtual];
+
+                    contexto.drawImage( 
+                    poderSprite,
+                    spriteX, spriteY,
+                    iconPower.largura, iconPower.altura, 
+                    iconPower.x, iconPower.y,
+                    iconPower.largura/5, iconPower.altura/5,
+                    );
+                }
+            },
+        }
+    return iconPower;
+}
+
+//função responsável por criar o iconPower
 function criaPoder(){
     const poder ={
         spriteX: 22,
@@ -151,7 +196,7 @@ function criaPoder(){
         largura: 180,
         altura: 150,
         x: -50,
-        y: 0,
+        y: -50,
         
         movimentos:[
             {spriteX: 22, spriteY:160, }, // sprite 1
@@ -206,7 +251,6 @@ function criaMonstro(){
         x: 350,
         y: canvas.height - 200,
         vida : 100,
-
         atualiza(){
             this.monstroAparece();    
             this.poderColide();
@@ -304,23 +348,25 @@ function criaMonstro(){
         },
 
         monstroAparece(){
-            xAtual = enemy.x
             if(frames > 500 && frames < 660){
                 enemy.x --
             }            
         },
 
         poderColide(){
-            if(globais.poder.x > 200 && globais.poder.y > 280){
+            if(globais.poder.x > 200 && globais.poder.y > 270 && frames > 500){
                 animacao = true;
                 globais.poder.x = -50
                 globais.poder.y = -50
-                poderDisponivel = true;
-                enemy.vida = enemy.vida - 25
+                enemy.vida = enemy.vida - 100
                 console.log(this.vida)
                 setInterval(() => {
                     animacao = false;
                 }, 2000);          
+            }
+            else if(globais.poder.x > canvas.width && frames < 500){
+                globais.poder.x = -50
+                globais.poder.y = -50
             }
         },
 
@@ -369,6 +415,7 @@ function inicializa(){
     globais.placar = criaPlacar();
     globais.enemy = criaMonstro();
     globais.poder = criaPoder();
+    globais.iconPower = criaIcons();
 }
 
 //funçao responsável por captar qual é a tela atual e caso necessesário, inicializa uma função
@@ -441,7 +488,7 @@ function criaCanos(){
             if((globais.flappyBird.x + 25) >= par.x){
               
                 if(cabeçaDoFlappy <= par.canoCeu.y){
-                    poderDisponivel = true;
+                    poderDisponivel = false;
                     return true;
                 }
                 if(peDoFlappy >+ par.canoChao.y){
@@ -465,7 +512,7 @@ function criaCanos(){
                 par.x = par.x - 2;
 
                 if (canos.temColisaoComOFlappyBird(par)){
-                    poderDisponivel = true;
+                    poderDisponivel = false;
                     somDeMetal.play();
                     mudaParaTela(telas.FIM)   
                 }
@@ -532,7 +579,7 @@ function criaFlappyBird(){
         velocidade: 0,
         atualiza(){
             if (fazColisao(flappyBird, globais.chao)) {
-                poderDisponivel = true;
+                poderDisponivel = false;
                 somDeQueda.play();
                 mudaParaTela(telas.FIM)            
                 return ;
@@ -602,7 +649,7 @@ function fazColisao(flappyBird, chao){
     const flappyBirdY = flappyBird.y + flappyBird.altura
     const chaoY = globais.chao.y
     if( flappyBirdY >= chaoY){
-        poderDisponivel = true;
+        poderDisponivel = false;
         return true;
     }
     return false;
@@ -638,6 +685,7 @@ telas.JOGO = {
         globais.placar = criaPlacar();
         globais.enemy = criaMonstro();
         globais.poder.criaPoder();
+        globais.iconPower.criaIcons();
     },
     desenha(){
         planoDeFundo.desenha(); //função que desenha o background
@@ -647,6 +695,7 @@ telas.JOGO = {
         globais.placar.desenha();
         globais.enemy.desenha();
         globais.poder.desenha();
+        globais.iconPower.desenha();
     },
     click(){
         globais.flappyBird.pula();
