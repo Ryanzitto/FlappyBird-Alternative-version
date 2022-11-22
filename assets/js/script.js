@@ -1,4 +1,4 @@
-console.log('Flappy Bird Game');
+console.log('Flappy Bird Alternative');
 
 const somDeQueda = new Audio();
 somDeQueda.src ='./assets/sound/hit.mp3';
@@ -18,17 +18,31 @@ enemySprite.src = './assets/sprites/pngwing.com.png';
 const poderSprite = new Image();
 poderSprite.src = './assets/sprites/poder.png';
 
+const healthSprite = new Image();
+healthSprite.src = './assets/sprites/health.png';
+
 const canvas = document.querySelector('canvas');
 const contexto = canvas.getContext('2d');
 
 const globais = {};
+
 let telaAtiva = {};
+
 let frames = 0;
+
+//variavel que regula o momento que a barra de vida do monstro 
+//deve ser desenhada
+let monstroApareceu;
+
+//variavel que seta o numero coraçoes que o monstro possui
+//e ajuda na lógicas
+let numeroDeCoracoes = 8;
+
+//variavel que ajuda na lógica de movimento do monstro
 let animacao = false;
  
 //variavel que ajuda na lógica de movimento do poder
 let poderDisponivel;
-
 
 //Objeto referente aos pontos finais na tela de game over
  const placarFinal= {
@@ -68,6 +82,7 @@ const planoDeFundo = {
        );
     }
 }
+
 //Objeto referente a tela de Game Over
 const gameOver = {
     sX: 134,
@@ -86,6 +101,7 @@ const gameOver = {
        );
     }
 }
+
 //Objeto referente as medalhas na tela de Game Over
 const medalhas = {
     sX: 0,
@@ -143,6 +159,46 @@ function passouFrames(){
     }
 } 
 
+//função que cria as vidas do monstro
+function criaHealth(){
+    const health = {
+        spriteX: 256,
+        spriteY: 283,
+        largura: 88,
+        altura: 88,
+        x: 50,
+        y: 420,
+
+        atualiza(){},
+
+        healthBar: [
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 20, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 50, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 80, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 110, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 140, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 170, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 200, y: 420,},
+            {spriteX: 256, spriteY :283, largura: 88, altura: 88, x: 230, y: 420,},
+        ],
+
+        desenha(){
+            if(monstroApareceu === true){
+                for(var i = 0; i < numeroDeCoracoes; i++){
+                    contexto.drawImage( 
+                        healthSprite,
+                        health.healthBar[i].spriteX, health.healthBar[i].spriteY,
+                        health.healthBar[i].largura, health.healthBar[i].altura, 
+                        health.healthBar[i].x +20, health.healthBar[i].y,
+                        health.healthBar[i].largura/4, health.healthBar[i].altura/4,
+                        );
+                }
+            }
+        },
+    }
+    return health;
+}
+
 function criaIcons(){
     const iconPower = {
         spriteX: 22,
@@ -197,7 +253,7 @@ function criaPoder(){
         altura: 150,
         x: -50,
         y: -50,
-        
+        dano: 25,
         movimentos:[
             {spriteX: 22, spriteY:160, }, // sprite 1
             {spriteX: 224, spriteY:160, }, // sprite 2
@@ -250,11 +306,10 @@ function criaMonstro(){
         altura: 145,
         x: 350,
         y: canvas.height - 200,
-        vida : 100,
+        vida: 200,
         atualiza(){
             this.monstroAparece();    
             this.poderColide();
-            this.vidaAcaba();       
         },
          
         movimentos:[
@@ -262,9 +317,9 @@ function criaMonstro(){
             {spriteX: 130, spriteY:148, }, // Parado 2
             {spriteX: 265, spriteY:148, }, // Parado 3 
             {spriteX: 546, spriteY:126, largura: 130, altura: 137, }, //abre a boca 1
-            {spriteX: 409, spriteY:126, largura: 130, altura: 137, }, //abre a boca 2
-                 
+            {spriteX: 409, spriteY:126, largura: 130, altura: 137, }, //abre a boca 2              
         ],
+
         hurt:[
             {spriteX: 0, spriteY :403, largura: 130, altura: 130, },
             {spriteX: 0, spriteY :403, largura: 130, altura: 130, },
@@ -279,6 +334,14 @@ function criaMonstro(){
             {spriteX: 296, spriteY :556, largura: 131, altura: 150, },  
             {spriteX: 146, spriteY :556, largura: 131, altura: 150, },   
             {spriteX: 146, spriteY :556, largura: 131, altura: 150, },   
+        ],
+
+        death:[
+            {spriteX: -20, spriteY :1049, largura: 174, altura: 165, },
+            {spriteX: 154, spriteY :1049, largura: 174, altura: 165, },
+            {spriteX: 353, spriteY :1049, largura: 174, altura: 165, },  
+            {spriteX: -20, spriteY :1214, largura: 174, altura: 165, },   
+            {spriteX: 205, spriteY :1214, largura: 174, altura: 165, },   
         ],
 
         frameAtual: 0,
@@ -296,7 +359,7 @@ function criaMonstro(){
         },
 
         desenha(){
-            if(globais.enemy.vida > 1){
+            if(globais.enemy.vida > 100){
                 if(animacao == true){
                     enemy.atualizaOFrameAtual()
                     const{ spriteX, spriteY } = enemy.hurt[enemy.frameAtual];
@@ -320,7 +383,7 @@ function criaMonstro(){
                    );        
                 } 
             }
-            else if(globais.enemy.vida <= 0){
+            else if(globais.enemy.vida <= 100){
                 if(animacao == true){
                     enemy.atualizaOFrameAtual()
                     const{ spriteX, spriteY } = enemy.hurt[enemy.frameAtual];
@@ -343,12 +406,16 @@ function criaMonstro(){
                         enemy.largura, enemy.altura,
                    );        
                 }
-                //aqui ainda será adcionado a condicional que fará a animação de morte do cogumelo
             }
+        },
+
+        desenhaMorte(){
+            // este espaço ainda será usado
         },
 
         monstroAparece(){
             if(frames > 500 && frames < 660){
+                monstroApareceu = true;
                 enemy.x --
             }            
         },
@@ -358,8 +425,11 @@ function criaMonstro(){
                 animacao = true;
                 globais.poder.x = -50
                 globais.poder.y = -50
-                enemy.vida = enemy.vida - 100
+                enemy.vida = enemy.vida - globais.poder.dano;
                 console.log(this.vida)
+                somDeQueda.play();
+                globais.health.healthBar.pop()
+                numeroDeCoracoes = numeroDeCoracoes -1;
                 setInterval(() => {
                     animacao = false;
                 }, 2000);          
@@ -368,14 +438,7 @@ function criaMonstro(){
                 globais.poder.x = -50
                 globais.poder.y = -50
             }
-        },
-
-        vidaAcaba(){
-            if(this.vida <= 0){
-                console.log('você destruiu o monstro')
-            }
-        }
-
+        }, 
     }
     return enemy;
 }
@@ -391,7 +454,7 @@ function zeraMedalha(){
     medalhas.sX = 0;
     medalhas.sY = 79;
 }
-
+//função que define qual a medalha será recebida
 function qualMedalha(pontos){
     if(pontos >=20){
         medalhas.sX = 48;
@@ -416,6 +479,7 @@ function inicializa(){
     globais.enemy = criaMonstro();
     globais.poder = criaPoder();
     globais.iconPower = criaIcons();
+    globais.health = criaHealth();
 }
 
 //funçao responsável por captar qual é a tela atual e caso necessesário, inicializa uma função
@@ -676,6 +740,8 @@ const telas = {
             globais.chao.atualiza();
             zeraMedalha();
             frames = 0;
+            monstroApareceu = false;
+            numeroDeCoracoes = 8;
         }
     }
 }
@@ -686,27 +752,30 @@ telas.JOGO = {
         globais.enemy = criaMonstro();
         globais.poder.criaPoder();
         globais.iconPower.criaIcons();
+        globais.health.criaHealth();
     },
     desenha(){
         planoDeFundo.desenha(); //função que desenha o background
-        globais.canos.desenha();
+        globais.canos.desenha(); //função que desenha canos
         globais.chao.desenha(); //funcão que desenha o chaos
         globais.flappyBird.desenha(); //função que desenha o pássaro
-        globais.placar.desenha();
-        globais.enemy.desenha();
-        globais.poder.desenha();
-        globais.iconPower.desenha();
+        globais.placar.desenha(); //função que desenha o placar
+        globais.enemy.desenha();//função que desenha o monstro
+        globais.poder.desenha();//função que desenha o poder
+        globais.iconPower.desenha();//função que desenha o icone de poder   
+        globais.health.desenha();//função que desenha os pontos de vida
     },
     click(){
         globais.flappyBird.pula();
     },
     atualiza(){
-        globais.flappyBird.atualiza();  //funcão que atualiza a posição do pássaro
+        globais.flappyBird.atualiza();
         globais.chao.atualiza();
         globais.canos.atualiza();
         globais.placar.atualiza();
         globais.poder.atualiza();  
         globais.enemy.atualiza();
+        globais.health.atualiza();
     },
     espacePush(){
         globais.poder.espacePush();
