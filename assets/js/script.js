@@ -30,6 +30,10 @@ let telaAtiva = {};
 
 let frames = 0;
 
+//variavel que valida se o monstro foi derrotado ou não
+//pra liberar ou não a bonificação no fim da partida
+let monstroFoiDerrotado = false;
+
 //variavel que regula o momento que a barra de vida do monstro 
 //deve ser desenhada
 let monstroApareceu;
@@ -139,7 +143,6 @@ const mensagemGetReady = {
        );
     }
 }
-
 //função que seta o x e y do poder pros mesmos do flappy
 //fazendo a lógica do poder sair do flappy
 function liberaPoder(){
@@ -310,6 +313,7 @@ function criaMonstro(){
         atualiza(){
             this.monstroAparece();    
             this.poderColide();
+            this.desenhaMorte();
         },
          
         movimentos:[
@@ -341,7 +345,7 @@ function criaMonstro(){
             {spriteX: 154, spriteY :1049, largura: 174, altura: 165, },
             {spriteX: 353, spriteY :1049, largura: 174, altura: 165, },  
             {spriteX: -20, spriteY :1214, largura: 174, altura: 165, },   
-            {spriteX: 205, spriteY :1214, largura: 174, altura: 165, },   
+            {spriteX: 205, spriteY :1214, largura: 174, altura: 165, }, 
         ],
 
         frameAtual: 0,
@@ -383,7 +387,7 @@ function criaMonstro(){
                    );        
                 } 
             }
-            else if(globais.enemy.vida <= 100){
+            else if(globais.enemy.vida <= 100 && globais.enemy.vida  > 1){
                 if(animacao == true){
                     enemy.atualizaOFrameAtual()
                     const{ spriteX, spriteY } = enemy.hurt[enemy.frameAtual];
@@ -407,10 +411,32 @@ function criaMonstro(){
                    );        
                 }
             }
+            else if (this.vida == 0){
+                enemy.atualizaOFrameAtual()
+                const{ spriteX, spriteY } = enemy.death[enemy.frameAtual];
+                contexto.drawImage( 
+                    enemySprite,
+                    spriteX, spriteY, 
+                    enemy.largura, enemy.altura,
+                    enemy.x, enemy.y -15,
+                    enemy.largura, enemy.altura,);
+                    setTimeout(() => {
+                    this.vida = -10;
+                    },  500);                    
+            }
         },
 
         desenhaMorte(){
-            // este espaço ainda será usado
+            if (this.vida == -10){
+                monstroFoiDerrotado = true;
+                contexto.drawImage( 
+                    enemySprite,
+                    229, 1240, 
+                    131, 105,
+                    enemy.x, enemy.y +20,
+                    131, 105,);
+                    console.log('UHULLLLL você derrotou o boss!!!')
+            }
         },
 
         monstroAparece(){
@@ -421,7 +447,7 @@ function criaMonstro(){
         },
 
         poderColide(){
-            if(globais.poder.x > 200 && globais.poder.y > 270 && frames > 500){
+            if(globais.poder.x > 200 && globais.poder.y > 270 && frames > 500 && globais.enemy.vida >=25){
                 animacao = true;
                 globais.poder.x = -50
                 globais.poder.y = -50
@@ -446,6 +472,9 @@ function criaMonstro(){
 //função que facilita acesso de uma variavel 
 function pontosFinais(pontuacao){
     pts = pontuacao
+    if(monstroFoiDerrotado){
+        pts = pts + 1000
+    }
     return pts;
  }
 
@@ -803,7 +832,7 @@ telas.FIM = {
         frames = 0;
     }
 }
-     
+
 // Essa função se repete varias vezes por segundo
 function loop(){
     telaAtiva.desenha();

@@ -16,9 +16,9 @@ PLANO DE IMPLEMENTAÇÕES
 
 - Adcionar efeito sonoro da colisão do poder *FEITO*
 
--Adcionar marcador de vida do monstro *FITO*
+-Adcionar marcador de vida do monstro *FEITO*
 
-- Adcionar animação de morte do cogumelo
+- Adcionar animação de morte do cogumelo *FEITO*
 
 - Adcionar algum prêmio ou reconhecimento ao jogador ao vencer o BOSS
 
