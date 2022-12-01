@@ -1,5 +1,7 @@
     -SOBRE O PROJETO-
 
+link do jogo: https://ryanzitto.github.io/FlappyBird-Alternative-version/
+
 Querido desenvolvedor(a), 
 Este é meu primeiro "Game" então no caso do código não estar tão "clean"
 Ou "organizado" ou até mesmo não estar pautado nas melhores práticas,

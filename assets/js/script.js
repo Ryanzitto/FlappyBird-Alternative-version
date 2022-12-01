@@ -666,10 +666,11 @@ function criaFlappyBird(){
         y: 50,
         pulo: 3.5,
         pula(){        
-            flappyBird.velocidade = -flappyBird.pulo
+            flappyBird.velocidade = - flappyBird.pulo
         },
         gravidade: 0.15,
         velocidade: 0,
+        
         atualiza(){
             if (fazColisao(flappyBird, globais.chao)) {
                 poderDisponivel = false;
